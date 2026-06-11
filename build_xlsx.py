@@ -1,4 +1,4 @@
-"""Generate the AI Agent Program plan as an Excel workbook (AWS, 12 months)."""
+"""Generate the AI Agent Program plan as an Excel workbook (AWS, 5 months)."""
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
@@ -29,38 +29,40 @@ def style_cell(c, *, font_color="1B2430", bold=False, size=11, bg=None,
         c.border = border
 
 # (name, objective, start, dur, owner, aws, deliverables)
+# Compressed 5-month plan - phases run in parallel to hit the deadline.
 PHASES = [
     ("Phase 1 - Administrative AI Agent (MVP)",
      "Automate meeting admin: transcripts to minutes, actions, owners, due dates",
-     1, 2, "AI/ML Lead",
+     1, 1, "AI/ML Lead",
      "Amazon Transcribe; Amazon Bedrock; Amazon S3; DynamoDB; AWS Lambda",
      "Meeting minutes; Action register; Summary report; Dashboard updates"),
     ("Phase 2 - Action Tracking Agent",
      "Monitor, remind, escalate and report on open / overdue actions",
-     3, 1, "Automation Eng",
+     2, 1, "Automation Eng",
      "Amazon EventBridge; Amazon SES / SNS; DynamoDB; AWS Lambda",
      "Weekly action reports; Overdue alerts; Escalation notifications"),
     ("Phase 3 - Governance & Forum Agent",
      "Read SteerCo / CIO / Cyber / Risk / Audit outputs; detect themes & risks",
-     4, 2, "Data Eng",
+     2, 2, "Data Eng",
      "Amazon Bedrock; Bedrock Knowledge Bases; Amazon S3; AWS Lambda",
      "Governance dashboard; Executive reports; Risk insights"),
     ("Phase 4 - Reporting & Analytics Agent",
      "Consolidate reports, measure delivery, build CIO packs & trend analysis",
-     6, 2, "BI Lead",
+     3, 2, "BI Lead",
      "Amazon QuickSight; AWS Glue; Amazon Athena; Amazon S3",
      "QuickSight dashboards; Monthly reports; CIO packs; Trend analysis"),
     ("Phase 5 - Enterprise Knowledge Agent",
      "Searchable organisational memory; natural-language Q&A over all outputs",
-     8, 2, "AI/ML Lead",
+     4, 1, "AI/ML Lead",
      "Bedrock Knowledge Bases; OpenSearch Serverless; Amazon Bedrock (RAG)",
      "Searchable knowledge base; Q&A assistant; Decision history"),
     ("Phase 6 - Central Control Tower (Orchestration)",
      'Connect all agents through a central platform - the "spine"',
-     10, 3, "Solutions Architect",
+     4, 2, "Solutions Architect",
      "Amazon Bedrock Agents; AWS Step Functions; API Gateway; Amazon Cognito",
      "Unified orchestration platform; Agent registry; Central console"),
 ]
+N_MONTHS = 5
 
 wb = Workbook()
 
@@ -74,7 +76,7 @@ ws.sheet_view.showGridLines = False
 # Title banner
 ws.merge_cells("A1:Q1")
 t = ws["A1"]
-t.value = "Enterprise AI Agent Programme - Delivery Roadmap (AWS, 12 Months)"
+t.value = "Enterprise AI Agent Programme - Delivery Roadmap (AWS, 5 Months)"
 style_cell(t, font_color=WHITE, bold=True, size=15, bg=NAVY, align="left", bordered=False)
 ws.row_dimensions[1].height = 30
 
@@ -86,7 +88,7 @@ ws.row_dimensions[2].height = 20
 
 # Header row (row 4)
 hdr_row = 4
-headers = ["Phase", "Start", "End"] + [f"M{i}" for i in range(1, 13)]
+headers = ["Phase", "Start", "End"] + [f"M{i}" for i in range(1, N_MONTHS + 1)]
 for j, h in enumerate(headers, start=1):
     c = ws.cell(row=hdr_row, column=j, value=h)
     align = "left" if j == 1 else "center"
@@ -103,7 +105,7 @@ for i, (name, obj, start, dur, owner, aws, deliv) in enumerate(PHASES):
     style_cell(cs, align="center", size=10)
     ce = ws.cell(row=r, column=3, value=f"M{end}")
     style_cell(ce, align="center", size=10)
-    for m in range(1, 13):
+    for m in range(1, N_MONTHS + 1):
         col = 3 + m
         cell = ws.cell(row=r, column=col)
         if start <= m <= end:
@@ -126,8 +128,8 @@ ws.cell(row=ms_row, column=2)
 ws.cell(row=ms_row, column=3)
 style_cell(ws.cell(row=ms_row, column=2), bg=NAVY, bordered=True)
 style_cell(ws.cell(row=ms_row, column=3), bg=NAVY, bordered=True)
-milestones = {2: "MVP live", 5: "Gov insights", 9: "Knowledge Q&A", 12: "Control Tower"}
-for m in range(1, 13):
+milestones = {1: "MVP live", 3: "Gov insights", 4: "Knowledge Q&A", 5: "Control Tower"}
+for m in range(1, N_MONTHS + 1):
     col = 3 + m
     cell = ws.cell(row=ms_row, column=col)
     if m in milestones:
@@ -141,8 +143,8 @@ ws.row_dimensions[ms_row].height = 26
 ws.column_dimensions["A"].width = 34
 ws.column_dimensions["B"].width = 7
 ws.column_dimensions["C"].width = 7
-for m in range(1, 13):
-    ws.column_dimensions[get_column_letter(3 + m)].width = 9
+for m in range(1, N_MONTHS + 1):
+    ws.column_dimensions[get_column_letter(3 + m)].width = 11
 
 note_row = ms_row + 2
 ws.cell(row=note_row, column=1,
@@ -189,27 +191,26 @@ for j, (h, w) in enumerate(zip(tcols, twidths), start=1):
 ws3.row_dimensions[1].height = 22
 
 TASKS = [
-    # Phase 1
+    # Phase 1 - M1
     (0, "M1", "Set up AWS landing zone, IAM roles, S3 buckets for raw inputs", "S3, IAM, Organizations", "Secure ingest foundation"),
     (0, "M1", "Transcribe recordings to text; ingest Teams transcripts & notes", "Amazon Transcribe, S3", "Normalised transcript store"),
-    (0, "M1-M2", "Prompt + extract action items, owners, due dates (structured JSON)", "Amazon Bedrock, Lambda", "Structured action data"),
-    (0, "M2", "Generate meeting minutes & summaries; persist action register", "Amazon Bedrock, DynamoDB", "Minutes, summaries, register"),
-    # Phase 2
-    (1, "M3", "Scheduled scan of open/overdue actions; reminder + escalation logic", "EventBridge, Lambda", "Automated reminders"),
-    (1, "M3", "Notification channels and closure-evidence capture", "Amazon SES / SNS, S3", "Alerts & status reports"),
-    # Phase 3
-    (2, "M4", "Ingest SteerCo/CIO/Cyber/Risk/Audit outputs into knowledge base", "Bedrock Knowledge Bases, S3", "Governance corpus"),
-    (2, "M4-M5", "Theme, risk & dependency detection; executive summaries", "Amazon Bedrock, Lambda", "Risk insights & exec reports"),
-    # Phase 4
-    (3, "M6", "Build data lake / ETL for reporting; define KPIs & metrics", "AWS Glue, Athena, S3", "Curated reporting datasets"),
-    (3, "M6-M7", "Dashboards, monthly reports, CIO packs, trend analysis", "Amazon QuickSight", "Executive reporting packs"),
-    # Phase 5
-    (4, "M8", "Index all outputs; build vector store for semantic search", "OpenSearch Serverless, S3", "Searchable index"),
-    (4, "M8-M9", "RAG-based Q&A assistant over organisational memory", "Bedrock Knowledge Bases (RAG)", "Natural-language Q&A"),
-    # Phase 6
-    (5, "M10", "Design orchestration spine; agent registry & shared data contracts", "Step Functions, API Gateway", "Orchestration design"),
-    (5, "M10-M11", "Wire all agents together; central console & access control", "Bedrock Agents, Cognito", "Unified platform"),
-    (5, "M12", "End-to-end testing, hardening, go-live & handover", "CloudWatch, Step Functions", "Production Control Tower"),
+    (0, "M1", "Extract actions/owners/due dates; minutes, summaries, register", "Amazon Bedrock, DynamoDB", "MVP live (minutes + register)"),
+    # Phase 2 - M2
+    (1, "M2", "Scheduled scan of open/overdue actions; reminder + escalation logic", "EventBridge, Lambda", "Automated reminders"),
+    (1, "M2", "Notification channels and closure-evidence capture", "Amazon SES / SNS, S3", "Alerts & status reports"),
+    # Phase 3 - M2-M3
+    (2, "M2-M3", "Ingest SteerCo/CIO/Cyber/Risk/Audit outputs into knowledge base", "Bedrock Knowledge Bases, S3", "Governance corpus"),
+    (2, "M3", "Theme, risk & dependency detection; executive summaries", "Amazon Bedrock, Lambda", "Risk insights & exec reports"),
+    # Phase 4 - M3-M4
+    (3, "M3", "Build data lake / ETL for reporting; define KPIs & metrics", "AWS Glue, Athena, S3", "Curated reporting datasets"),
+    (3, "M3-M4", "Dashboards, monthly reports, CIO packs, trend analysis", "Amazon QuickSight", "Executive reporting packs"),
+    # Phase 5 - M4
+    (4, "M4", "Index all outputs; build vector store for semantic search", "OpenSearch Serverless, S3", "Searchable index"),
+    (4, "M4", "RAG-based Q&A assistant over organisational memory", "Bedrock Knowledge Bases (RAG)", "Natural-language Q&A"),
+    # Phase 6 - M4-M5
+    (5, "M4", "Design orchestration spine; agent registry & shared data contracts", "Step Functions, API Gateway", "Orchestration design"),
+    (5, "M5", "Wire all agents together; central console & access control", "Bedrock Agents, Cognito", "Unified platform"),
+    (5, "M5", "End-to-end testing, hardening, go-live & handover", "CloudWatch, Step Functions", "Production Control Tower"),
 ]
 for i, (pidx, months, task, svc, out) in enumerate(TASKS):
     r = 2 + i
@@ -226,5 +227,7 @@ ws.freeze_panes = "A5"
 ws2.freeze_panes = "A2"
 ws3.freeze_panes = "A2"
 
-wb.save("/projects/sandbox/AI_Agent_Programme_Plan.xlsx")
+import os
+_OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "AI_Agent_Programme_Plan.xlsx")
+wb.save(_OUT)
 print("XLSX saved with sheets:", wb.sheetnames)

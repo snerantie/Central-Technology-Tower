@@ -1,0 +1,29 @@
+WEBVTT
+
+1
+00:00:01.000 --> 00:00:06.000
+Priya: Welcome everyone to the Cloud Migration steering meeting. Let's review progress.
+
+2
+00:00:06.500 --> 00:00:13.000
+David: The networking work slipped. David will finalise the VPC design by next Tuesday.
+
+3
+00:00:13.500 --> 00:00:20.000
+Priya: Good. We agreed to adopt Amazon Bedrock for the agent workloads.
+
+4
+00:00:20.500 --> 00:00:27.000
+Sarah: This is urgent - Sarah will raise a security review request with the Cyber team immediately.
+
+5
+00:00:27.500 --> 00:00:34.000
+David: Action: Marcus to prepare the cost estimate for the QuickSight dashboards by end of week.
+
+6
+00:00:34.500 --> 00:00:40.000
+Priya: Let's also make sure the action register is updated after every meeting going forward.
+
+7
+00:00:40.500 --> 00:00:46.000
+Sarah: Agreed. We will reconvene next Thursday to confirm the migration cutover date.

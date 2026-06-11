@@ -1,4 +1,5 @@
-"""Generate the AI Agent Program roadmap PowerPoint deck (AWS, 12 months)."""
+"""Generate the AI Agent Program roadmap PowerPoint deck (AWS, 5 months)."""
+import os
 from pptx import Presentation
 from pptx.util import Inches, Pt, Emu
 from pptx.dml.color import RGBColor
@@ -23,34 +24,36 @@ PHASE_COLORS = [
 ]
 
 # (name, objective, start_month(1-idx), duration_months, aws_services)
+# Compressed 5-month plan - phases run in parallel to hit the deadline.
 PHASES = [
     ("Phase 1 - Administrative AI Agent (MVP)",
      "Automate meeting admin: transcripts to minutes, actions, owners, due dates",
-     1, 2,
+     1, 1,
      "Amazon Transcribe | Amazon Bedrock | Amazon S3 | DynamoDB | AWS Lambda"),
     ("Phase 2 - Action Tracking Agent",
      "Monitor, remind, escalate and report on open / overdue actions",
-     3, 1,
+     2, 1,
      "Amazon EventBridge | Amazon SES / SNS | DynamoDB | AWS Lambda"),
     ("Phase 3 - Governance & Forum Agent",
      "Read SteerCo / CIO / Cyber / Risk / Audit outputs; detect themes & risks",
-     4, 2,
+     2, 2,
      "Amazon Bedrock | Bedrock Knowledge Bases | Amazon S3 | AWS Lambda"),
     ("Phase 4 - Reporting & Analytics Agent",
      "Consolidate reports, measure delivery, build CIO packs & trend analysis",
-     6, 2,
+     3, 2,
      "Amazon QuickSight | AWS Glue | Amazon Athena | Amazon S3"),
     ("Phase 5 - Enterprise Knowledge Agent",
      "Searchable organisational memory; natural-language Q&A over all outputs",
-     8, 2,
+     4, 1,
      "Bedrock Knowledge Bases | OpenSearch Serverless | Amazon Bedrock (RAG)"),
     ("Phase 6 - Central Control Tower (Orchestration)",
      'Connect all agents through a central platform - the "spine"',
-     10, 3,
+     4, 2,
      "Amazon Bedrock Agents | AWS Step Functions | API Gateway | Amazon Cognito"),
 ]
 
-MONTHS = [f"M{i}" for i in range(1, 13)]
+MONTHS = [f"M{i}" for i in range(1, 6)]
+N_MONTHS = len(MONTHS)
 
 prs = Presentation()
 prs.slide_width  = Inches(13.333)   # 16:9
@@ -106,7 +109,7 @@ add_text(s, Inches(0.9), Inches(2.0), Inches(11.5), Inches(1.4),
 add_text(s, Inches(0.9), Inches(3.2), Inches(11.5), Inches(0.9),
          "Delivery Roadmap: MVP to Central Control Tower", 26, AWS_ORANGE, bold=True)
 add_text(s, Inches(0.92), Inches(5.25), Inches(11.5), Inches(0.6),
-         "6 Phases  -  12 Months  -  Built on Amazon Web Services (AWS)", 18, LIGHT)
+         "6 Phases  -  5 Months  -  Built on Amazon Web Services (AWS)", 18, LIGHT)
 add_text(s, Inches(0.92), Inches(6.7), Inches(11.5), Inches(0.4),
          "Powered by Amazon Bedrock, Transcribe, QuickSight & Step Functions",
          12, GREY, italic=True)
@@ -118,7 +121,7 @@ s = prs.slides.add_slide(BLANK)
 add_rect(s, 0, 0, SW, SH, WHITE)
 add_rect(s, 0, 0, SW, Inches(0.85), AWS_NAVY)
 add_text(s, Inches(0.4), Inches(0.12), Inches(12.5), Inches(0.6),
-         "Programme Roadmap - 12 Month Timeline", 26, WHITE, bold=True,
+         "Programme Roadmap - 5 Month Timeline", 26, WHITE, bold=True,
          anchor=MSO_ANCHOR.MIDDLE)
 
 # layout geometry
@@ -128,7 +131,7 @@ grid_l  = Inches(4.4)
 grid_r  = Inches(13.0)
 grid_w  = grid_r - grid_l
 top     = Inches(1.55)
-col_w   = Emu(int(grid_w / 12))
+col_w   = Emu(int(grid_w / N_MONTHS))
 row_h   = Inches(0.72)
 row_gap = Inches(0.08)
 
@@ -143,7 +146,7 @@ for i, m in enumerate(MONTHS):
 
 # vertical gridlines + quarter bands behind rows
 total_h = Emu(int(row_h) * 6 + int(row_gap) * 5)
-for i in range(13):
+for i in range(N_MONTHS + 1):
     cl = Emu(int(grid_l) + i * int(col_w))
     add_rect(s, cl, top, Emu(9525), total_h, RGBColor(0xE2, 0xE6, 0xEA))
 
@@ -165,10 +168,10 @@ for idx, (name, obj, start, dur, aws) in enumerate(PHASES):
 # milestone callouts under grid
 add_rect(s, grid_l, Inches(6.35), grid_w, Inches(0.02), AWS_ORANGE)
 milestones = [
-    ("M2", "MVP live"),
-    ("M5", "Governance insights"),
-    ("M9", "Knowledge Q&A"),
-    ("M12", "Control Tower"),
+    ("M1", "MVP live"),
+    ("M3", "Governance insights"),
+    ("M4", "Knowledge Q&A"),
+    ("M5", "Control Tower"),
 ]
 for m, lbl in milestones:
     i = int(m[1:]) - 1
@@ -222,5 +225,5 @@ add_text(s, col_x[0], Inches(6.95), Inches(12.6), Inches(0.4),
          "Cross-cutting from M1: Security & IAM, Cost governance, Data privacy, CI/CD, Human-in-the-loop review.",
          10, GREY, italic=True)
 
-prs.save("/projects/sandbox/AI_Agent_Programme_Roadmap.pptx")
+prs.save(os.path.join(os.path.dirname(os.path.abspath(__file__)), "AI_Agent_Programme_Roadmap.pptx"))
 print("PPTX saved:", len(prs.slides.__iter__.__self__._sldIdLst), "slides")
