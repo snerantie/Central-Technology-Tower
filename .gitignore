@@ -1,0 +1,13 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+
+# Admin agent runtime artifacts
+phase1_admin_agent/output/
+phase1_admin_agent/*.db
+action_register.db
+.env
