@@ -163,13 +163,23 @@ for i, (name, obj, start, dur, owner, aws, deliv) in enumerate(PHASES):
     s_date = phase_start(start)
     e_date = phase_end(start + dur - 1)
     style_cell(ws.cell(row=r, column=1, value=name), bold=True, size=10, align="left", wrap=True)
-    style_cell(ws.cell(row=r, column=2, value=fmt_short(s_date)), align="center", size=10)
-    style_cell(ws.cell(row=r, column=3, value=fmt_short(e_date)), align="center", size=10)
+    # Real Excel date cells (not text) so they track like a project plan.
+    cb = ws.cell(row=r, column=2, value=s_date)
+    style_cell(cb, align="center", size=10)
+    cb.number_format = "dd mmm yyyy"
+    cc = ws.cell(row=r, column=3, value=e_date)
+    style_cell(cc, align="center", size=10)
+    cc.number_format = "dd mmm yyyy"
+    first_active = True
     for k, (y, m, first, last) in enumerate(CAL_MONTHS):
         col = 4 + k
         cell = ws.cell(row=r, column=col)
         active = s_date <= last and e_date >= first
-        style_cell(cell, bg=(PHASE_HEX[i] if active else LIGHT))
+        style_cell(cell, bg=(PHASE_HEX[i] if active else LIGHT),
+                   font_color=WHITE, bold=True, size=8, align="center", wrap=True)
+        if active and first_active:
+            cell.value = f"{fmt_short(s_date)} - {fmt_short(e_date)}"
+            first_active = False
     ws.row_dimensions[r].height = 30
 
 
@@ -199,10 +209,10 @@ ws.row_dimensions[ms_row].height = 30
 
 # Column widths
 ws.column_dimensions["A"].width = 34
-ws.column_dimensions["B"].width = 11
-ws.column_dimensions["C"].width = 11
+ws.column_dimensions["B"].width = 13
+ws.column_dimensions["C"].width = 13
 for k in range(len(CAL_MONTHS)):
-    ws.column_dimensions[get_column_letter(4 + k)].width = 12
+    ws.column_dimensions[get_column_letter(4 + k)].width = 13
 
 note_row = ms_row + 2
 ws.cell(row=note_row, column=1,
@@ -231,12 +241,17 @@ ws2.row_dimensions[1].height = 26
 for i, (name, obj, start, dur, owner, aws, deliv) in enumerate(PHASES):
     r = 2 + i
     band = BAND if i % 2 == 0 else WHITE
-    vals = [name, fmt(phase_start(start)), fmt(phase_end(start + dur - 1)),
-            f"{dur} mo", owner, obj,
+    s_date = phase_start(start)
+    e_date = phase_end(start + dur - 1)
+    vals = [name, s_date, e_date, f"{dur} mo", owner, obj,
             aws.replace("; ", "\n"), deliv.replace("; ", "\n")]
     for j, v in enumerate(vals, start=1):
         c = ws2.cell(row=r, column=j, value=v)
         style_cell(c, size=10, bg=band, wrap=True, valign="top", align="left")
+    # Real date cells with a project-style date format.
+    for jcol in (2, 3):
+        ws2.cell(row=r, column=jcol).number_format = "dd mmm yyyy"
+        ws2.cell(row=r, column=jcol).alignment = Alignment(horizontal="center", vertical="top")
     ws2.cell(row=r, column=1).font = Font(bold=True, size=10, color=PHASE_HEX[i], name="Calibri")
     ws2.row_dimensions[r].height = 72
 ws2.freeze_panes = "A2"
@@ -249,7 +264,7 @@ ws2.freeze_panes = "A2"
 ws3 = wb.create_sheet("Detailed Tasks")
 ws3.sheet_view.showGridLines = False
 tcols = ["Phase", "Start", "End", "Workstream / Task", "AWS Service", "Output"]
-twidths = [26, 12, 12, 44, 28, 36]
+twidths = [26, 13, 13, 44, 28, 36]
 for j, (h, w) in enumerate(zip(tcols, twidths), start=1):
     c = ws3.cell(row=1, column=j, value=h)
     style_cell(c, font_color=WHITE, bold=True, size=11, bg=ORANGE, align="center")
@@ -276,11 +291,14 @@ TASKS = [
 for i, (pidx, sm, em, task, svc, out) in enumerate(TASKS):
     r = 2 + i
     band = BAND if pidx % 2 == 0 else WHITE
-    row_vals = [PHASES[pidx][0].split(" - ")[0], fmt_short(phase_start(sm)),
-                fmt_short(phase_end(em)), task, svc, out]
+    row_vals = [PHASES[pidx][0].split(" - ")[0], phase_start(sm),
+                phase_end(em), task, svc, out]
     for j, v in enumerate(row_vals, start=1):
         c = ws3.cell(row=r, column=j, value=v)
         style_cell(c, size=10, bg=band, wrap=True, valign="center", align="left")
+    for jcol in (2, 3):
+        ws3.cell(row=r, column=jcol).number_format = "dd mmm yyyy"
+        ws3.cell(row=r, column=jcol).alignment = Alignment(horizontal="center", vertical="center")
     ws3.cell(row=r, column=1).font = Font(bold=True, size=9, color=PHASE_HEX[pidx], name="Calibri")
     ws3.row_dimensions[r].height = 30
 ws3.freeze_panes = "A2"
