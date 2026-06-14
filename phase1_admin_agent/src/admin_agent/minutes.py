@@ -6,8 +6,6 @@ already-extracted action items.
 """
 from __future__ import annotations
 
-import textwrap
-
 from .config import Settings
 from .models import ActionItem, MeetingMetadata
 
@@ -34,22 +32,15 @@ def _render_minutes(
     metadata: MeetingMetadata, summary: str, actions: list[ActionItem]
 ) -> str:
     attendees = ", ".join(metadata.attendees) if metadata.attendees else "Not recorded"
-    return textwrap.dedent(
-        f"""\
-        # Meeting Minutes - {metadata.title}
-
-        - **Date:** {metadata.meeting_date}
-        - **Meeting ID:** {metadata.meeting_id}
-        - **Attendees:** {attendees}
-
-        ## Summary
-
-        {summary}
-
-        ## Action Items
-
-        {_render_actions_table(actions)}
-        """
+    return (
+        f"# Meeting Minutes - {metadata.title}\n\n"
+        f"- **Date:** {metadata.meeting_date}\n"
+        f"- **Meeting ID:** {metadata.meeting_id}\n"
+        f"- **Attendees:** {attendees}\n\n"
+        f"## Summary\n\n"
+        f"{summary}\n\n"
+        f"## Action Items\n\n"
+        f"{_render_actions_table(actions)}\n"
     )
 
 

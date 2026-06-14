@@ -51,7 +51,10 @@ Artifacts (`*_minutes.md`, `*_summary.txt`, `*_actions.json`) are written to the
 
 ## Running against AWS
 
-Set the environment (see `.env.example`) and disable mock mode:
+**For step-by-step deployment instructions, see [`aws/README.md`](aws/README.md).**
+
+Once the AWS resources are created (CloudFormation template in `aws/cloudformation.yaml`),
+set the environment (see `.env.example`) and disable mock mode:
 
 ```bash
 export ADMIN_AGENT_MOCK=0

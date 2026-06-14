@@ -1,0 +1,142 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  Central Technology Tower - Phase 1 Administrative AI Agent.
+  Creates the DynamoDB action register, S3 buckets for inputs/outputs,
+  and an IAM user for local CLI use against this stack.
+
+Parameters:
+  ProjectTag:
+    Type: String
+    Default: ctt-admin-agent
+    Description: Tag applied to every resource in this stack.
+
+Resources:
+
+  # ---- Central Action Register -----------------------------------------------
+  ActionRegisterTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: ctt-action-register
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: action_id
+          AttributeType: S
+        - AttributeName: status
+          AttributeType: S
+        - AttributeName: due_date
+          AttributeType: S
+      KeySchema:
+        - AttributeName: action_id
+          KeyType: HASH
+      # GSI lets the Phase 2 (Action Tracking) agent efficiently query
+      # "everything Open ordered by due date".
+      GlobalSecondaryIndexes:
+        - IndexName: status-due-index
+          KeySchema:
+            - AttributeName: status
+              KeyType: HASH
+            - AttributeName: due_date
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectTag
+
+  # ---- Storage for transcripts (in) and generated artefacts (out) ----------
+  TranscriptsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub ctt-admin-agent-transcripts-${AWS::AccountId}-${AWS::Region}
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      VersioningConfiguration:
+        Status: Enabled
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectTag
+
+  OutputsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub ctt-admin-agent-outputs-${AWS::AccountId}-${AWS::Region}
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectTag
+
+  # ---- IAM policy: minimum permissions the agent needs --------------------
+  AgentPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: ctt-admin-agent-policy
+      Description: Permissions the Phase 1 admin agent needs (Bedrock, DynamoDB, S3, Transcribe).
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: BedrockInvoke
+            Effect: Allow
+            Action:
+              - bedrock:InvokeModel
+              - bedrock:Converse
+            Resource: '*'
+          - Sid: ActionRegister
+            Effect: Allow
+            Action:
+              - dynamodb:GetItem
+              - dynamodb:PutItem
+              - dynamodb:UpdateItem
+              - dynamodb:Query
+              - dynamodb:Scan
+              - dynamodb:BatchWriteItem
+            Resource:
+              - !GetAtt ActionRegisterTable.Arn
+              - !Sub ${ActionRegisterTable.Arn}/index/*
+          - Sid: Storage
+            Effect: Allow
+            Action:
+              - s3:GetObject
+              - s3:PutObject
+              - s3:ListBucket
+            Resource:
+              - !GetAtt TranscriptsBucket.Arn
+              - !Sub ${TranscriptsBucket.Arn}/*
+              - !GetAtt OutputsBucket.Arn
+              - !Sub ${OutputsBucket.Arn}/*
+          - Sid: Transcribe
+            Effect: Allow
+            Action:
+              - transcribe:StartTranscriptionJob
+              - transcribe:GetTranscriptionJob
+            Resource: '*'
+
+Outputs:
+  ActionRegisterTableName:
+    Value: !Ref ActionRegisterTable
+    Description: Name of the DynamoDB action register.
+  TranscriptsBucketName:
+    Value: !Ref TranscriptsBucket
+    Description: S3 bucket where you upload meeting transcripts/recordings.
+  OutputsBucketName:
+    Value: !Ref OutputsBucket
+    Description: S3 bucket where the agent writes minutes/summaries/actions.
+  AgentPolicyArn:
+    Value: !Ref AgentPolicy
+    Description: Attach this policy to the IAM user/role you run the agent as.
