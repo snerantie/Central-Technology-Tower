@@ -1,4 +1,6 @@
 # CloudFormation Outputs — screenshots
+<img width="548" height="292" alt="image" src="https://github.com/user-attachments/assets/73eb17de-10c4-4be5-9408-d301f2469608" />
+
 
 Upload screenshots of the **Outputs** tab from the `ctt-admin-agent`
 CloudFormation stack here.
