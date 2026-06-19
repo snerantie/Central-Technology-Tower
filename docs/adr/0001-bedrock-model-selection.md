@@ -42,8 +42,18 @@ During initial Phase 1 development we hit problems with Anthropic Claude:
 
 ## Decision
 
-**Default `BEDROCK_MODEL_ID` to `eu.amazon.nova-lite-v1:0`** (Amazon Nova
-Lite, EU cross-region inference profile) for the entire programme.
+**Default `BEDROCK_MODEL_ID` to `eu.amazon.nova-2-lite-v1:0`** (Amazon Nova 2 Lite,
+EU cross-region inference profile) for the entire programme.
+
+Nova 2 Lite (released late 2025) is the second-generation Amazon Nova family
+member: multimodal, 1M-token context window, extended thinking support, and
+the cost-effective tier of the Nova 2 family.
+
+**Note (late 2025):** AWS retired the Bedrock *Model Access* opt-in flow.
+Foundation models on Bedrock are now enabled by default — access is governed
+purely by IAM policies. The CloudFormation stack's `AgentPolicy` already
+grants `bedrock:Converse` and `bedrock:InvokeModel` on `Resource: '*'`, so
+no console step is needed before the agent can call Nova 2 Lite.
 
 Per-phase guidance — override `BEDROCK_MODEL_ID` env var when needed (no code
 change required, since the agent uses the Bedrock Converse API, which is
@@ -51,12 +61,12 @@ shared by Nova / Claude / Mistral / Llama):
 
 | Phase | Recommended model | Rationale |
 |-------|-------------------|-----------|
-| 1 — Admin Agent | Nova Lite | Extraction + structured JSON, simple summary |
-| 2 — Action Tracking | Nova Lite | Short reminder text, status checks |
-| 3 — Governance | Nova Lite (→ Nova Pro if quality lacking) | Theme/risk detection |
-| 4 — Reporting | **Nova Pro** | Richer prose quality matters for executives |
-| 5 — Knowledge Q&A | **Nova Pro** | Conversational tone for managers |
-| 6 — Control Tower | Nova Lite | Routing logic only |
+| 1 — Admin Agent | Nova 2 Lite | Extraction + structured JSON, simple summary |
+| 2 — Action Tracking | Nova 2 Lite | Short reminder text, status checks |
+| 3 — Governance | Nova 2 Lite (→ Nova 2 Pro if quality lacking) | Theme/risk detection |
+| 4 — Reporting | **Nova 2 Pro** | Richer prose quality matters for executives |
+| 5 — Knowledge Q&A | **Nova 2 Pro** | Conversational tone for managers |
+| 6 — Control Tower | Nova 2 Lite | Routing logic only |
 
 ## Consequences
 

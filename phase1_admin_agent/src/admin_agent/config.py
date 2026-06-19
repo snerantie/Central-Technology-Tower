@@ -26,14 +26,17 @@ class Settings:
     mock_mode: bool = field(default_factory=lambda: _env_bool("ADMIN_AGENT_MOCK", False))
 
     # --- AWS / Bedrock --------------------------------------------------
-    # Default to Amazon Nova Lite via the eu cross-region inference profile.
-    # Nova Lite is ~50x cheaper than Claude Sonnet and easily handles meeting
-    # action extraction + summarization. Override with BEDROCK_MODEL_ID for
-    # a different model (Nova Pro, Mistral, Llama, Claude, etc.).
+    # Default to Amazon Nova 2 Lite via the eu cross-region inference profile.
+    # Nova 2 Lite (released late 2025) is multimodal, has a 1M-token context
+    # window, supports extended thinking, and is the cost-effective choice
+    # for the AI Agent Programme. As of late 2025, AWS retired the Bedrock
+    # model-access opt-in flow -- access is enabled by default per IAM only.
+    # Override with BEDROCK_MODEL_ID for a different model (Nova Pro, Mistral,
+    # Llama, Claude, etc.). All share the Bedrock Converse API.
     aws_region: str = field(default_factory=lambda: os.getenv("AWS_REGION", "eu-west-1"))
     bedrock_model_id: str = field(
         default_factory=lambda: os.getenv(
-            "BEDROCK_MODEL_ID", "eu.amazon.nova-lite-v1:0"
+            "BEDROCK_MODEL_ID", "eu.amazon.nova-2-lite-v1:0"
         )
     )
 
