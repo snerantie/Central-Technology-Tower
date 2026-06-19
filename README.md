@@ -28,6 +28,12 @@ It ingests a meeting transcript, extracts action items (owners + due dates), gen
 minutes and a summary, and writes actions to a central register. Runs locally in mock
 mode (no AWS) or against Amazon Bedrock + DynamoDB. See its README for usage.
 
+## Architecture Decisions
+
+Significant architectural decisions are captured as **ADRs** under [`docs/adr/`](docs/adr/):
+
+- [ADR-0001 — Use Amazon Nova Lite as default Bedrock LLM](docs/adr/0001-bedrock-model-selection.md)
+
 ## Planning Artifacts
 
 | File | Description |
