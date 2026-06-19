@@ -26,12 +26,14 @@ class Settings:
     mock_mode: bool = field(default_factory=lambda: _env_bool("ADMIN_AGENT_MOCK", False))
 
     # --- AWS / Bedrock --------------------------------------------------
-    # Default to the regional inference profile for Claude Sonnet 4, which is
-    # current as of mid-2026. Older 3.x and 3.7 versions have been retired.
+    # Default to Amazon Nova Lite via the eu cross-region inference profile.
+    # Nova Lite is ~50x cheaper than Claude Sonnet and easily handles meeting
+    # action extraction + summarization. Override with BEDROCK_MODEL_ID for
+    # a different model (Nova Pro, Mistral, Llama, Claude, etc.).
     aws_region: str = field(default_factory=lambda: os.getenv("AWS_REGION", "eu-west-1"))
     bedrock_model_id: str = field(
         default_factory=lambda: os.getenv(
-            "BEDROCK_MODEL_ID", "eu.anthropic.claude-sonnet-4-20250514-v1:0"
+            "BEDROCK_MODEL_ID", "eu.amazon.nova-lite-v1:0"
         )
     )
 
