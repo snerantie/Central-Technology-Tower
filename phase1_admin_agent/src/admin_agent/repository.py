@@ -101,7 +101,11 @@ class DynamoDBActionRegistry(ActionRegistry):
     def save_actions(self, actions: list[ActionItem]) -> int:
         with self.table.batch_writer() as batch:
             for action in actions:
-                batch.put_item(Item=action.to_dict())
+                # DynamoDB GSI keys can't be NULL: drop None attributes so items
+                # without a due_date are simply absent from the status-due-index
+                # (still stored in the main table) instead of being rejected.
+                item = {k: v for k, v in action.to_dict().items() if v is not None}
+                batch.put_item(Item=item)
         return len(actions)
 
     def list_actions(self, status: str | None = None) -> list[dict]:
