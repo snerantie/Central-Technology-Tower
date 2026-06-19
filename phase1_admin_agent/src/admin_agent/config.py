@@ -26,12 +26,12 @@ class Settings:
     mock_mode: bool = field(default_factory=lambda: _env_bool("ADMIN_AGENT_MOCK", False))
 
     # --- AWS / Bedrock --------------------------------------------------
-    # Default to the regional inference profile for Claude 3.7 Sonnet, which is
-    # available in eu-west-1. The June 2024 v1 model has reached end-of-life.
+    # Default to the regional inference profile for Claude Sonnet 4, which is
+    # current as of mid-2026. Older 3.x and 3.7 versions have been retired.
     aws_region: str = field(default_factory=lambda: os.getenv("AWS_REGION", "eu-west-1"))
     bedrock_model_id: str = field(
         default_factory=lambda: os.getenv(
-            "BEDROCK_MODEL_ID", "eu.anthropic.claude-3-7-sonnet-20250219-v1:0"
+            "BEDROCK_MODEL_ID", "eu.anthropic.claude-sonnet-4-20250514-v1:0"
         )
     )
 
