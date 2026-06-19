@@ -35,6 +35,7 @@ consequences accepted.
 | # | Title | Status |
 |---|-------|--------|
 | [0001](0001-bedrock-model-selection.md) | Use Amazon Nova Lite as default Bedrock LLM | Accepted |
+| [0002](0002-teams-integration-and-auto-distribution.md) | Microsoft Teams integration & automated minute distribution | Accepted |
 
 ## Template (Nygard style)
 
